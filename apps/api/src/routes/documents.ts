@@ -12,8 +12,8 @@ const s3 = new S3Client({
   region: process.env.AWS_REGION || 'us-east-1',
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-  },
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
+  }
 });
 
 const isTestEnv = process.env.NODE_ENV === 'test';
@@ -26,7 +26,8 @@ if (isTestEnv) {
       const allowedMimes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
       if (allowedMimes.includes(file.mimetype)) return cb(null, true);
       // Don't throw — mark the request so we can respond gracefully in the route handler
-      (req as any).fileValidationError = 'Invalid file type. Only PDF, JPEG, PNG, and GIF files are allowed.';
+      (req as any).fileValidationError =
+        'Invalid file type. Only PDF, JPEG, PNG, and GIF files are allowed.';
       return cb(null, false);
     }
   });
@@ -36,28 +37,32 @@ if (isTestEnv) {
       s3,
       bucket: process.env.AWS_S3_BUCKET || 'buildsync-documents',
       metadata: (_req, file, cb) => cb(null, { fieldName: file.fieldname }),
-      key: (_req, file, cb) => cb(null, `documents/${Date.now()}-${file.originalname}`),
+      key: (_req, file, cb) => cb(null, `documents/${Date.now()}-${file.originalname}`)
     }),
     limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
       const allowedMimes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
       if (allowedMimes.includes(file.mimetype)) return cb(null, true);
-      (req as any).fileValidationError = 'Invalid file type. Only PDF, JPEG, PNG, and GIF files are allowed.';
+      (req as any).fileValidationError =
+        'Invalid file type. Only PDF, JPEG, PNG, and GIF files are allowed.';
       return cb(null, false);
-    },
+    }
   });
 }
 
 // Upload
 router.post('/:subcontractorId/documents', async (req: Request, res: Response) => {
   const { subcontractorId } = req.params;
-  if (process.env.NODE_ENV === 'test') console.log('[test] POST /:subcontractorId/documents start', { subcontractorId });
+  if (process.env.NODE_ENV === 'test')
+    console.log('[test] POST /:subcontractorId/documents start', { subcontractorId });
 
   await new Promise<void>((resolve) => {
     upload.single('file')(req, res, async (err: any) => {
-      if (process.env.NODE_ENV === 'test') console.log('[test] multer callback invoked, err=', err && err.message);
+      if (process.env.NODE_ENV === 'test')
+        console.log('[test] multer callback invoked, err=', err && err.message);
       if (err) {
-        if (process.env.NODE_ENV === 'test') console.log('[test] multer error -> responding 400', err.message);
+        if (process.env.NODE_ENV === 'test')
+          console.log('[test] multer error -> responding 400', err.message);
         res.status(400).json({ error: err.message });
         return resolve();
       }
@@ -92,7 +97,11 @@ router.post('/:subcontractorId/documents', async (req: Request, res: Response) =
 
       try {
         const fileUrl = (file as any).location || `memory://${file.originalname}-${Date.now()}`;
-        const metaObj: any = { originalName: file.originalname, size: file.size, mimeType: file.mimetype };
+        const metaObj: any = {
+          originalName: file.originalname,
+          size: file.size,
+          mimeType: file.mimetype
+        };
         if ((file as any).key) metaObj.key = (file as any).key;
         if ((file as any).bucket) metaObj.bucket = (file as any).bucket;
 
@@ -103,8 +112,8 @@ router.post('/:subcontractorId/documents', async (req: Request, res: Response) =
             expiresAt: expiresAt ? new Date(expiresAt) : null,
             status: 'pending',
             subcontractorId,
-            metadata: JSON.stringify(metaObj),
-          },
+            metadata: JSON.stringify(metaObj)
+          }
         });
 
         res.status(201).json({ message: 'Document uploaded successfully', document });
@@ -135,14 +144,21 @@ router.post('/:subcontractorId/documents', async (req: Request, res: Response) =
 router.delete('/:subcontractorId/documents/:documentId', async (req: Request, res: Response) => {
   try {
     const { subcontractorId, documentId } = req.params;
-    const document = await prisma.complianceDocument.findFirst({ where: { id: documentId, subcontractorId } });
+    const document = await prisma.complianceDocument.findFirst({
+      where: { id: documentId, subcontractorId }
+    });
     if (!document) return res.status(404).json({ error: 'Document not found' });
 
     const existingMeta = (document.metadata as any) || {};
     const s3Key = existingMeta.key;
     if (s3Key) {
       try {
-        await s3.send(new DeleteObjectCommand({ Bucket: process.env.AWS_S3_BUCKET || 'buildsync-documents', Key: s3Key }));
+        await s3.send(
+          new DeleteObjectCommand({
+            Bucket: process.env.AWS_S3_BUCKET || 'buildsync-documents',
+            Key: s3Key
+          })
+        );
       } catch (s3Err) {
         console.error('Failed to delete from S3:', s3Err);
         return res.status(500).json({ error: 'Failed to delete file from storage' });
@@ -158,28 +174,51 @@ router.delete('/:subcontractorId/documents/:documentId', async (req: Request, re
 });
 
 // Verify
-router.put('/:subcontractorId/documents/:documentId/verify', async (req: Request, res: Response) => {
-  try {
-    const { subcontractorId, documentId } = req.params;
-    const { status, verifiedBy, verificationNotes } = req.body;
-    if (!status || !verifiedBy) return res.status(400).json({ error: 'Missing required fields' });
-    const validStatuses = ['approved', 'rejected', 'pending_revision'];
-    if (!validStatuses.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+router.put(
+  '/:subcontractorId/documents/:documentId/verify',
+  async (req: Request, res: Response) => {
+    try {
+      const { subcontractorId, documentId } = req.params;
+      const { status, verifiedBy, verificationNotes } = req.body;
+      if (!status || !verifiedBy) return res.status(400).json({ error: 'Missing required fields' });
+      const validStatuses = ['approved', 'rejected', 'pending_revision'];
+      if (!validStatuses.includes(status)) return res.status(400).json({ error: 'Invalid status' });
 
-    const existingDocument = await prisma.complianceDocument.findFirst({ where: { id: documentId, subcontractorId } });
-    if (!existingDocument) return res.status(404).json({ error: 'Document not found' });
-    if (existingDocument.expiresAt && existingDocument.expiresAt < new Date()) return res.status(400).json({ error: 'Cannot verify expired document' });
+      const existingDocument = await prisma.complianceDocument.findFirst({
+        where: { id: documentId, subcontractorId }
+      });
+      if (!existingDocument) return res.status(404).json({ error: 'Document not found' });
+      if (existingDocument.expiresAt && existingDocument.expiresAt < new Date())
+        return res.status(400).json({ error: 'Cannot verify expired document' });
 
-    const existingMeta = (existingDocument.metadata as any) || {};
-    const newVerificationEntry = { status, verifiedBy, date: new Date().toISOString(), notes: verificationNotes || null };
-    const updatedMeta = { ...existingMeta, lastVerifiedAt: new Date().toISOString(), verificationHistory: [ ...(Array.isArray(existingMeta.verificationHistory) ? existingMeta.verificationHistory : []), newVerificationEntry ] };
+      const existingMeta = (existingDocument.metadata as any) || {};
+      const newVerificationEntry = {
+        status,
+        verifiedBy,
+        date: new Date().toISOString(),
+        notes: verificationNotes || null
+      };
+      const updatedMeta = {
+        ...existingMeta,
+        lastVerifiedAt: new Date().toISOString(),
+        verificationHistory: [
+          ...(Array.isArray(existingMeta.verificationHistory)
+            ? existingMeta.verificationHistory
+            : []),
+          newVerificationEntry
+        ]
+      };
 
-    const document = await prisma.complianceDocument.update({ where: { id: documentId }, data: { status, verificationDate: new Date(), verifiedBy, metadata: updatedMeta as any } });
-    return res.json({ message: 'Document verified successfully', document });
-  } catch (err) {
-    console.error('Document verification error:', err);
-    return res.status(500).json({ error: 'Failed to verify document' });
+      const document = await prisma.complianceDocument.update({
+        where: { id: documentId },
+        data: { status, verificationDate: new Date(), verifiedBy, metadata: updatedMeta as any }
+      });
+      return res.json({ message: 'Document verified successfully', document });
+    } catch (err) {
+      console.error('Document verification error:', err);
+      return res.status(500).json({ error: 'Failed to verify document' });
+    }
   }
-});
+);
 
 export default router;

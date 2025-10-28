@@ -17,11 +17,13 @@ process.on('unhandledRejection', (reason) => {
 const prisma = new PrismaClient();
 
 const app = express();
-app.use(cors({
-  origin: 'http://localhost:3000', // Allow requests from Next.js frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: 'http://localhost:3000', // Allow requests from Next.js frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+  })
+);
 app.use(express.json());
 
 // Mount documents router which handles S3 uploads for subcontractors
@@ -52,7 +54,7 @@ app.get('/api/companies', async (_req: Request, res: Response) => {
         }
       }
     });
-  return res.json(companies);
+    return res.json(companies);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to fetch companies' });
@@ -67,11 +69,11 @@ app.get('/api/companies/:id', async (req: Request, res: Response) => {
       include: {
         users: true,
         projects: { include: { timeEntries: { include: { subcontractor: true } } } },
-        subcontractors: { include: { docs: true, timeEntries: true } },
-      },
+        subcontractors: { include: { docs: true, timeEntries: true } }
+      }
     });
-  if (!company) return res.status(404).json({ error: 'Company not found' });
-  return res.json(company);
+    if (!company) return res.status(404).json({ error: 'Company not found' });
+    return res.json(company);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to fetch company' });
@@ -81,9 +83,9 @@ app.get('/api/companies/:id', async (req: Request, res: Response) => {
 app.post('/api/companies', async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
-  if (!name) return res.status(400).json({ error: 'Name is required' });
-  const company = await prisma.company.create({ data: { name } });
-  return res.status(201).json(company);
+    if (!name) return res.status(400).json({ error: 'Name is required' });
+    const company = await prisma.company.create({ data: { name } });
+    return res.status(201).json(company);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to create company' });
@@ -95,9 +97,9 @@ app.put('/api/companies/:id', async (req: Request, res: Response) => {
     const { name } = req.body;
     const updated = await prisma.company.update({
       where: { id: req.params.id },
-      data: { name },
+      data: { name }
     });
-  return res.json(updated);
+    return res.json(updated);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to update company' });
@@ -107,7 +109,7 @@ app.put('/api/companies/:id', async (req: Request, res: Response) => {
 app.delete('/api/companies/:id', async (req: Request, res: Response) => {
   try {
     await prisma.company.delete({ where: { id: req.params.id } });
-  return res.status(204).send();
+    return res.status(204).send();
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to delete company' });
@@ -117,8 +119,10 @@ app.delete('/api/companies/:id', async (req: Request, res: Response) => {
 // --- Projects CRUD ---
 app.get('/api/projects', async (_req: Request, res: Response) => {
   try {
-    const projects = await prisma.project.findMany({ include: { timeEntries: { include: { subcontractor: true } }, company: true } });
-  return res.json(projects);
+    const projects = await prisma.project.findMany({
+      include: { timeEntries: { include: { subcontractor: true } }, company: true }
+    });
+    return res.json(projects);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to fetch projects' });
@@ -129,10 +133,10 @@ app.get('/api/projects/:id', async (req: Request, res: Response) => {
   try {
     const project = await prisma.project.findUnique({
       where: { id: req.params.id },
-      include: { timeEntries: { include: { subcontractor: true } }, company: true },
+      include: { timeEntries: { include: { subcontractor: true } }, company: true }
     });
-  if (!project) return res.status(404).json({ error: 'Project not found' });
-  return res.json(project);
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    return res.json(project);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to fetch project' });
@@ -142,9 +146,12 @@ app.get('/api/projects/:id', async (req: Request, res: Response) => {
 app.post('/api/projects', async (req: Request, res: Response) => {
   try {
     const { name, budget, companyId } = req.body;
-  if (!name || !companyId) return res.status(400).json({ error: 'Name and companyId are required' });
-  const project = await prisma.project.create({ data: { name, budget: budget ?? null, companyId } });
-  return res.status(201).json(project);
+    if (!name || !companyId)
+      return res.status(400).json({ error: 'Name and companyId are required' });
+    const project = await prisma.project.create({
+      data: { name, budget: budget ?? null, companyId }
+    });
+    return res.status(201).json(project);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to create project' });
@@ -154,8 +161,11 @@ app.post('/api/projects', async (req: Request, res: Response) => {
 app.put('/api/projects/:id', async (req: Request, res: Response) => {
   try {
     const { name, budget } = req.body;
-    const updated = await prisma.project.update({ where: { id: req.params.id }, data: { name, budget } });
-  return res.json(updated);
+    const updated = await prisma.project.update({
+      where: { id: req.params.id },
+      data: { name, budget }
+    });
+    return res.json(updated);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to update project' });
@@ -165,7 +175,7 @@ app.put('/api/projects/:id', async (req: Request, res: Response) => {
 app.delete('/api/projects/:id', async (req: Request, res: Response) => {
   try {
     await prisma.project.delete({ where: { id: req.params.id } });
-  return res.status(204).send();
+    return res.status(204).send();
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to delete project' });
@@ -175,8 +185,10 @@ app.delete('/api/projects/:id', async (req: Request, res: Response) => {
 // --- Subcontractors CRUD ---
 app.get('/api/subcontractors', async (_req: Request, res: Response) => {
   try {
-    const subs = await prisma.subcontractor.findMany({ include: { docs: true, timeEntries: true, company: true } });
-  return res.json(subs);
+    const subs = await prisma.subcontractor.findMany({
+      include: { docs: true, timeEntries: true, company: true }
+    });
+    return res.json(subs);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to fetch subcontractors' });
@@ -185,9 +197,12 @@ app.get('/api/subcontractors', async (_req: Request, res: Response) => {
 
 app.get('/api/subcontractors/:id', async (req: Request, res: Response) => {
   try {
-    const sub = await prisma.subcontractor.findUnique({ where: { id: req.params.id }, include: { docs: true, timeEntries: true, company: true } });
-  if (!sub) return res.status(404).json({ error: 'Subcontractor not found' });
-  return res.json(sub);
+    const sub = await prisma.subcontractor.findUnique({
+      where: { id: req.params.id },
+      include: { docs: true, timeEntries: true, company: true }
+    });
+    if (!sub) return res.status(404).json({ error: 'Subcontractor not found' });
+    return res.json(sub);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to fetch subcontractor' });
@@ -196,17 +211,17 @@ app.get('/api/subcontractors/:id', async (req: Request, res: Response) => {
 
 app.post('/api/subcontractors', async (req: Request, res: Response) => {
   try {
-    const { 
-      name, 
-      email, 
-      phone, 
+    const {
+      name,
+      email,
+      phone,
       companyId,
       address,
       taxId,
       businessType,
       rating,
       status,
-      specialties 
+      specialties
     } = req.body;
 
     if (!name || !companyId) {
@@ -228,7 +243,7 @@ app.post('/api/subcontractors', async (req: Request, res: Response) => {
       }
     });
 
-  return res.status(201).json(sub);
+    return res.status(201).json(sub);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to create subcontractor' });
@@ -237,17 +252,8 @@ app.post('/api/subcontractors', async (req: Request, res: Response) => {
 
 app.put('/api/subcontractors/:id', async (req: Request, res: Response) => {
   try {
-    const {
-      name,
-      email,
-      phone,
-      address,
-      taxId,
-      businessType,
-      rating,
-      status,
-      specialties
-    } = req.body;
+    const { name, email, phone, address, taxId, businessType, rating, status, specialties } =
+      req.body;
 
     const updated = await prisma.subcontractor.update({
       where: { id: req.params.id },
@@ -263,7 +269,7 @@ app.put('/api/subcontractors/:id', async (req: Request, res: Response) => {
         specialties
       }
     });
-  return res.json(updated);
+    return res.json(updated);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to update subcontractor' });
@@ -273,7 +279,7 @@ app.put('/api/subcontractors/:id', async (req: Request, res: Response) => {
 app.delete('/api/subcontractors/:id', async (req: Request, res: Response) => {
   try {
     await prisma.subcontractor.delete({ where: { id: req.params.id } });
-  return res.status(204).send();
+    return res.status(204).send();
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to delete subcontractor' });
@@ -283,8 +289,10 @@ app.delete('/api/subcontractors/:id', async (req: Request, res: Response) => {
 // --- TimeEntries CRUD ---
 app.get('/api/time-entries', async (_req: Request, res: Response) => {
   try {
-    const entries = await prisma.timeEntry.findMany({ include: { project: true, subcontractor: true } });
-  return res.json(entries);
+    const entries = await prisma.timeEntry.findMany({
+      include: { project: true, subcontractor: true }
+    });
+    return res.json(entries);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to fetch time entries' });
@@ -293,9 +301,12 @@ app.get('/api/time-entries', async (_req: Request, res: Response) => {
 
 app.get('/api/time-entries/:id', async (req: Request, res: Response) => {
   try {
-    const entry = await prisma.timeEntry.findUnique({ where: { id: req.params.id }, include: { project: true, subcontractor: true } });
-  if (!entry) return res.status(404).json({ error: 'Time entry not found' });
-  return res.json(entry);
+    const entry = await prisma.timeEntry.findUnique({
+      where: { id: req.params.id },
+      include: { project: true, subcontractor: true }
+    });
+    if (!entry) return res.status(404).json({ error: 'Time entry not found' });
+    return res.json(entry);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to fetch time entry' });
@@ -305,9 +316,19 @@ app.get('/api/time-entries/:id', async (req: Request, res: Response) => {
 app.post('/api/time-entries', async (req: Request, res: Response) => {
   try {
     const { projectId, subcontractorId, start, end, hours, status } = req.body;
-    if (!projectId || !subcontractorId || !start || !end) return res.status(400).json({ error: 'Missing required fields' });
-  const entry = await prisma.timeEntry.create({ data: { projectId, subcontractorId, start: new Date(start), end: new Date(end), hours: hours ?? 0, status: status ?? 'submitted' } });
-  return res.status(201).json(entry);
+    if (!projectId || !subcontractorId || !start || !end)
+      return res.status(400).json({ error: 'Missing required fields' });
+    const entry = await prisma.timeEntry.create({
+      data: {
+        projectId,
+        subcontractorId,
+        start: new Date(start),
+        end: new Date(end),
+        hours: hours ?? 0,
+        status: status ?? 'submitted'
+      }
+    });
+    return res.status(201).json(entry);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to create time entry' });
@@ -317,8 +338,16 @@ app.post('/api/time-entries', async (req: Request, res: Response) => {
 app.put('/api/time-entries/:id', async (req: Request, res: Response) => {
   try {
     const { start, end, hours, status } = req.body;
-    const updated = await prisma.timeEntry.update({ where: { id: req.params.id }, data: { start: start ? new Date(start) : undefined, end: end ? new Date(end) : undefined, hours, status } });
-  return res.json(updated);
+    const updated = await prisma.timeEntry.update({
+      where: { id: req.params.id },
+      data: {
+        start: start ? new Date(start) : undefined,
+        end: end ? new Date(end) : undefined,
+        hours,
+        status
+      }
+    });
+    return res.json(updated);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to update time entry' });
@@ -328,7 +357,7 @@ app.put('/api/time-entries/:id', async (req: Request, res: Response) => {
 app.delete('/api/time-entries/:id', async (req: Request, res: Response) => {
   try {
     await prisma.timeEntry.delete({ where: { id: req.params.id } });
-  return res.status(204).send();
+    return res.status(204).send();
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to delete time entry' });
@@ -339,7 +368,7 @@ app.delete('/api/time-entries/:id', async (req: Request, res: Response) => {
 app.get('/api/documents', async (_req: Request, res: Response) => {
   try {
     const docs = await prisma.complianceDocument.findMany({ include: { subcontractor: true } });
-  return res.json(docs);
+    return res.json(docs);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to fetch documents' });
@@ -348,9 +377,12 @@ app.get('/api/documents', async (_req: Request, res: Response) => {
 
 app.get('/api/documents/:id', async (req: Request, res: Response) => {
   try {
-    const doc = await prisma.complianceDocument.findUnique({ where: { id: req.params.id }, include: { subcontractor: true } });
-  if (!doc) return res.status(404).json({ error: 'Document not found' });
-  return res.json(doc);
+    const doc = await prisma.complianceDocument.findUnique({
+      where: { id: req.params.id },
+      include: { subcontractor: true }
+    });
+    if (!doc) return res.status(404).json({ error: 'Document not found' });
+    return res.json(doc);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to fetch document' });
@@ -360,9 +392,18 @@ app.get('/api/documents/:id', async (req: Request, res: Response) => {
 app.post('/api/documents', async (req: Request, res: Response) => {
   try {
     const { subcontractorId, type, fileUrl, status, expiresAt } = req.body;
-    if (!subcontractorId || !type || !fileUrl) return res.status(400).json({ error: 'Missing required fields' });
-  const doc = await prisma.complianceDocument.create({ data: { subcontractorId, type, fileUrl, status: status ?? 'pending', expiresAt: expiresAt ? new Date(expiresAt) : null } });
-  return res.status(201).json(doc);
+    if (!subcontractorId || !type || !fileUrl)
+      return res.status(400).json({ error: 'Missing required fields' });
+    const doc = await prisma.complianceDocument.create({
+      data: {
+        subcontractorId,
+        type,
+        fileUrl,
+        status: status ?? 'pending',
+        expiresAt: expiresAt ? new Date(expiresAt) : null
+      }
+    });
+    return res.status(201).json(doc);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to create document' });
@@ -372,8 +413,11 @@ app.post('/api/documents', async (req: Request, res: Response) => {
 app.put('/api/documents/:id', async (req: Request, res: Response) => {
   try {
     const { type, fileUrl, status, expiresAt } = req.body;
-    const updated = await prisma.complianceDocument.update({ where: { id: req.params.id }, data: { type, fileUrl, status, expiresAt: expiresAt ? new Date(expiresAt) : undefined } });
-  return res.json(updated);
+    const updated = await prisma.complianceDocument.update({
+      where: { id: req.params.id },
+      data: { type, fileUrl, status, expiresAt: expiresAt ? new Date(expiresAt) : undefined }
+    });
+    return res.json(updated);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to update document' });
@@ -383,7 +427,7 @@ app.put('/api/documents/:id', async (req: Request, res: Response) => {
 app.delete('/api/documents/:id', async (req: Request, res: Response) => {
   try {
     await prisma.complianceDocument.delete({ where: { id: req.params.id } });
-  return res.status(204).send();
+    return res.status(204).send();
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Failed to delete document' });
@@ -393,10 +437,12 @@ app.delete('/api/documents/:id', async (req: Request, res: Response) => {
 // Support frontend verification endpoint used by SubcontractorCard
 app.post('/api/documents/:id/verify', async (req: Request, res: Response) => {
   try {
-  const { status, verifiedBy } = req.body;
+    const { status, verifiedBy } = req.body;
 
     if (!status || !verifiedBy) {
-      return res.status(400).json({ error: 'Missing required fields', required: ['status', 'verifiedBy'] });
+      return res
+        .status(400)
+        .json({ error: 'Missing required fields', required: ['status', 'verifiedBy'] });
     }
 
     const validStatuses = ['approved', 'rejected', 'pending_revision', 'verified'];
@@ -404,14 +450,27 @@ app.post('/api/documents/:id/verify', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid status', validStatuses });
     }
 
-    const existingDocument = await prisma.complianceDocument.findUnique({ where: { id: req.params.id } });
+    const existingDocument = await prisma.complianceDocument.findUnique({
+      where: { id: req.params.id }
+    });
     if (!existingDocument) return res.status(404).json({ error: 'Document not found' });
 
     if (existingDocument.expiresAt && existingDocument.expiresAt < new Date()) {
-      return res.status(400).json({ error: 'Cannot verify expired document', expirationDate: existingDocument.expiresAt });
+      return res.status(400).json({
+        error: 'Cannot verify expired document',
+        expirationDate: existingDocument.expiresAt
+      });
     }
 
-    const updated = await prisma.complianceDocument.update({ where: { id: req.params.id }, data: { status, verificationDate: new Date(), verifiedBy, metadata: existingDocument.metadata } });
+    const updated = await prisma.complianceDocument.update({
+      where: { id: req.params.id },
+      data: {
+        status,
+        verificationDate: new Date(),
+        verifiedBy,
+        metadata: existingDocument.metadata
+      }
+    });
     return res.json({ message: 'Document verified successfully', document: updated });
   } catch (err) {
     console.error(err);

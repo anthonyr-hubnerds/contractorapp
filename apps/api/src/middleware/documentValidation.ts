@@ -1,10 +1,30 @@
 import { Request, Response, NextFunction } from 'express';
-import { DocumentType, DocumentStatus, DocumentUploadRequest, VerifyDocumentRequest } from '../types/documents';
+import {
+  DocumentType,
+  DocumentStatus,
+  DocumentUploadRequest,
+  VerifyDocumentRequest
+} from '../types/documents';
 
-const validDocumentTypes: DocumentType[] = ['insurance', 'license', 'certification', 'contract', 'other'];
-const validDocumentStatuses: DocumentStatus[] = ['pending', 'approved', 'rejected', 'pending_revision'];
+const validDocumentTypes: DocumentType[] = [
+  'insurance',
+  'license',
+  'certification',
+  'contract',
+  'other'
+];
+const validDocumentStatuses: DocumentStatus[] = [
+  'pending',
+  'approved',
+  'rejected',
+  'pending_revision'
+];
 
-export const validateDocumentUpload = (req: DocumentUploadRequest, res: Response, next: NextFunction): void => {
+export const validateDocumentUpload = (
+  req: DocumentUploadRequest,
+  res: Response,
+  next: NextFunction
+): void => {
   const { type, expiresAt } = req.body;
 
   // Validate document type
@@ -32,7 +52,11 @@ export const validateDocumentUpload = (req: DocumentUploadRequest, res: Response
   next();
 };
 
-export const validateDocumentVerification = (req: VerifyDocumentRequest, res: Response, next: NextFunction): void => {
+export const validateDocumentVerification = (
+  req: VerifyDocumentRequest,
+  res: Response,
+  next: NextFunction
+): void => {
   const { status, verifiedBy } = req.body;
 
   // Validate required fields
@@ -64,9 +88,13 @@ export const validateDocumentVerification = (req: VerifyDocumentRequest, res: Re
   next();
 };
 
-export const validateDocumentAccess = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const validateDocumentAccess = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   const { subcontractorId, documentId } = req.params;
-  
+
   // Ensure both IDs are provided
   if (!subcontractorId || !documentId) {
     res.status(400).json({

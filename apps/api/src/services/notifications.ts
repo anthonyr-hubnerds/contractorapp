@@ -51,7 +51,9 @@ export async function checkExpiringDocuments() {
     if (!doc.expiresAt) continue;
 
     const expiresAt = new Date(doc.expiresAt);
-    const daysUntilExpiration = Math.ceil((expiresAt.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const daysUntilExpiration = Math.ceil(
+      (expiresAt.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
 
     // Check different expiration thresholds
     if (
@@ -84,7 +86,7 @@ export async function checkExpiringDocuments() {
     if (!doc.subcontractorEmail) continue;
 
     const timeUntilExpiration = formatDistanceToNow(doc.expiresAt);
-    
+
     // Send email notification
     await sendEmail({
       to: doc.subcontractorEmail,
