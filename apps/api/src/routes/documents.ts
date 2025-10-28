@@ -3,6 +3,7 @@ import multer from 'multer';
 import multerS3 from 'multer-s3';
 import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { logger } from '../utils/logger';
 
 const prisma = new PrismaClient();
 export { prisma as documentsPrisma };
@@ -54,15 +55,15 @@ if (isTestEnv) {
 router.post('/:subcontractorId/documents', async (req: Request, res: Response) => {
   const { subcontractorId } = req.params;
   if (process.env.NODE_ENV === 'test')
-    console.log('[test] POST /:subcontractorId/documents start', { subcontractorId });
+    logger.info('[test] POST /:subcontractorId/documents start', { subcontractorId });
 
   await new Promise<void>((resolve) => {
     upload.single('file')(req, res, async (err: any) => {
       if (process.env.NODE_ENV === 'test')
-        console.log('[test] multer callback invoked, err=', err && err.message);
+        logger.info('[test] multer callback invoked, err=', err && err.message);
       if (err) {
         if (process.env.NODE_ENV === 'test')
-          console.log('[test] multer error -> responding 400', err.message);
+          logger.info('[test] multer error -> responding 400', err.message);
         res.status(400).json({ error: err.message });
         return resolve();
       }
@@ -127,10 +128,10 @@ router.post('/:subcontractorId/documents', async (req: Request, res: Response) =
             await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
           }
         } catch (s3Err) {
-          console.error('S3 cleanup failed', s3Err);
+          logger.error('S3 cleanup failed', s3Err);
         }
 
-        console.error('DB error', dbErr);
+        logger.error('DB error', dbErr);
         res.status(500).json({ error: 'Failed to save document' });
         return resolve();
       }
@@ -160,7 +161,7 @@ router.delete('/:subcontractorId/documents/:documentId', async (req: Request, re
           })
         );
       } catch (s3Err) {
-        console.error('Failed to delete from S3:', s3Err);
+        logger.error('Failed to delete from S3:', s3Err);
         return res.status(500).json({ error: 'Failed to delete file from storage' });
       }
     }
@@ -168,7 +169,7 @@ router.delete('/:subcontractorId/documents/:documentId', async (req: Request, re
     await prisma.complianceDocument.delete({ where: { id: documentId } });
     return res.status(200).json({ message: 'Document deleted successfully' });
   } catch (err) {
-    console.error('Document deletion error:', err);
+    logger.error('Document deletion error:', err);
     return res.status(500).json({ error: 'Failed to delete document' });
   }
 });
@@ -215,7 +216,7 @@ router.put(
       });
       return res.json({ message: 'Document verified successfully', document });
     } catch (err) {
-      console.error('Document verification error:', err);
+      logger.error('Document verification error:', err);
       return res.status(500).json({ error: 'Failed to verify document' });
     }
   }

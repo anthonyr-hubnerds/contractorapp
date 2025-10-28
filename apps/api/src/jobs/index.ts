@@ -1,12 +1,13 @@
 import { documentExpirationJob } from './documentExpiration';
+import { logger } from '../utils/logger';
 
 export function startCronJobs() {
-  console.log('Starting cron jobs...');
+  logger.info('Starting cron jobs...');
   documentExpirationJob.start();
 }
 
 // Handle graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('Stopping cron jobs...');
+  logger.info('Stopping cron jobs...');
   documentExpirationJob.stop();
 });

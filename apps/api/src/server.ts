@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import { startCronJobs } from './jobs';
+import { logger } from './utils/logger';
 
 dotenv.config();
 
@@ -27,9 +28,9 @@ app.get('/health', (_req: Request, res: Response) => res.json({ status: 'ok' }))
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
-  console.log(`API listening on port ${port}`);
+  logger.info(`API listening on port ${port}`);
   startCronJobs();
-  console.log('Started cron jobs');
+  logger.info('Started cron jobs');
 });
 
 // Handle graceful shutdown

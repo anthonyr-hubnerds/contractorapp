@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import documentsRouter from './routes/documents';
+import { logger } from './utils/logger';
 
 dotenv.config();
 
@@ -56,7 +57,7 @@ app.get('/api/companies', async (_req: Request, res: Response) => {
     });
     return res.json(companies);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to fetch companies' });
   }
 });
@@ -75,7 +76,7 @@ app.get('/api/companies/:id', async (req: Request, res: Response) => {
     if (!company) return res.status(404).json({ error: 'Company not found' });
     return res.json(company);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to fetch company' });
   }
 });
@@ -87,7 +88,7 @@ app.post('/api/companies', async (req: Request, res: Response) => {
     const company = await prisma.company.create({ data: { name } });
     return res.status(201).json(company);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to create company' });
   }
 });
@@ -101,7 +102,7 @@ app.put('/api/companies/:id', async (req: Request, res: Response) => {
     });
     return res.json(updated);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to update company' });
   }
 });
@@ -111,7 +112,7 @@ app.delete('/api/companies/:id', async (req: Request, res: Response) => {
     await prisma.company.delete({ where: { id: req.params.id } });
     return res.status(204).send();
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to delete company' });
   }
 });
@@ -124,7 +125,7 @@ app.get('/api/projects', async (_req: Request, res: Response) => {
     });
     return res.json(projects);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to fetch projects' });
   }
 });
@@ -138,7 +139,7 @@ app.get('/api/projects/:id', async (req: Request, res: Response) => {
     if (!project) return res.status(404).json({ error: 'Project not found' });
     return res.json(project);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to fetch project' });
   }
 });
@@ -153,7 +154,7 @@ app.post('/api/projects', async (req: Request, res: Response) => {
     });
     return res.status(201).json(project);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to create project' });
   }
 });
@@ -167,7 +168,7 @@ app.put('/api/projects/:id', async (req: Request, res: Response) => {
     });
     return res.json(updated);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to update project' });
   }
 });
@@ -177,7 +178,7 @@ app.delete('/api/projects/:id', async (req: Request, res: Response) => {
     await prisma.project.delete({ where: { id: req.params.id } });
     return res.status(204).send();
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to delete project' });
   }
 });
@@ -190,7 +191,7 @@ app.get('/api/subcontractors', async (_req: Request, res: Response) => {
     });
     return res.json(subs);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to fetch subcontractors' });
   }
 });
@@ -204,7 +205,7 @@ app.get('/api/subcontractors/:id', async (req: Request, res: Response) => {
     if (!sub) return res.status(404).json({ error: 'Subcontractor not found' });
     return res.json(sub);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to fetch subcontractor' });
   }
 });
@@ -245,7 +246,7 @@ app.post('/api/subcontractors', async (req: Request, res: Response) => {
 
     return res.status(201).json(sub);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to create subcontractor' });
   }
 });
@@ -271,7 +272,7 @@ app.put('/api/subcontractors/:id', async (req: Request, res: Response) => {
     });
     return res.json(updated);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to update subcontractor' });
   }
 });
@@ -281,7 +282,7 @@ app.delete('/api/subcontractors/:id', async (req: Request, res: Response) => {
     await prisma.subcontractor.delete({ where: { id: req.params.id } });
     return res.status(204).send();
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to delete subcontractor' });
   }
 });
@@ -294,7 +295,7 @@ app.get('/api/time-entries', async (_req: Request, res: Response) => {
     });
     return res.json(entries);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to fetch time entries' });
   }
 });
@@ -308,7 +309,7 @@ app.get('/api/time-entries/:id', async (req: Request, res: Response) => {
     if (!entry) return res.status(404).json({ error: 'Time entry not found' });
     return res.json(entry);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to fetch time entry' });
   }
 });
@@ -330,7 +331,7 @@ app.post('/api/time-entries', async (req: Request, res: Response) => {
     });
     return res.status(201).json(entry);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to create time entry' });
   }
 });
@@ -349,7 +350,7 @@ app.put('/api/time-entries/:id', async (req: Request, res: Response) => {
     });
     return res.json(updated);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to update time entry' });
   }
 });
@@ -359,7 +360,7 @@ app.delete('/api/time-entries/:id', async (req: Request, res: Response) => {
     await prisma.timeEntry.delete({ where: { id: req.params.id } });
     return res.status(204).send();
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to delete time entry' });
   }
 });
@@ -370,7 +371,7 @@ app.get('/api/documents', async (_req: Request, res: Response) => {
     const docs = await prisma.complianceDocument.findMany({ include: { subcontractor: true } });
     return res.json(docs);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to fetch documents' });
   }
 });
@@ -384,7 +385,7 @@ app.get('/api/documents/:id', async (req: Request, res: Response) => {
     if (!doc) return res.status(404).json({ error: 'Document not found' });
     return res.json(doc);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to fetch document' });
   }
 });
@@ -405,7 +406,7 @@ app.post('/api/documents', async (req: Request, res: Response) => {
     });
     return res.status(201).json(doc);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to create document' });
   }
 });
@@ -419,7 +420,7 @@ app.put('/api/documents/:id', async (req: Request, res: Response) => {
     });
     return res.json(updated);
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to update document' });
   }
 });
@@ -429,7 +430,7 @@ app.delete('/api/documents/:id', async (req: Request, res: Response) => {
     await prisma.complianceDocument.delete({ where: { id: req.params.id } });
     return res.status(204).send();
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to delete document' });
   }
 });
@@ -473,7 +474,7 @@ app.post('/api/documents/:id/verify', async (req: Request, res: Response) => {
     });
     return res.json({ message: 'Document verified successfully', document: updated });
   } catch (err) {
-    console.error(err);
+     logger.error(err);
     return res.status(500).json({ error: 'Failed to verify document' });
   }
 });
@@ -486,8 +487,7 @@ export { app };
 // Start the server only when run directly (not when imported by tests)
 if (require.main === module) {
   app.listen(port, () => {
-    // eslint-disable-next-line no-console
-    console.log(`API listening on port ${port}`);
+     logger.info(`API listening on port ${port}`);
   });
 
   process.on('SIGINT', async () => {

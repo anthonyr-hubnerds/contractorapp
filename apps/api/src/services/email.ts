@@ -7,12 +7,14 @@ interface EmailOptions {
 export async function sendEmail({ to, subject, html }: EmailOptions): Promise<void> {
   // For development, just log the email
   if (process.env.NODE_ENV === 'development') {
-    console.log('=====================================');
-    console.log('Email Notification');
-    console.log('To:', to);
-    console.log('Subject:', subject);
-    console.log('Body:', html);
-    console.log('=====================================');
+    // Use logger so we don't trigger eslint no-console everywhere
+    const { logger } = await import('../utils/logger');
+    logger.info('=====================================');
+    logger.info('Email Notification');
+    logger.info('To:', to);
+    logger.info('Subject:', subject);
+    logger.info('Body:', html);
+    logger.info('=====================================');
     return;
   }
 
