@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id            String   @id @default(cuid())
+  name          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  address       String?
+  phone         String?
+  website       String?
+  taxId         String?
+  users         User[]
+  projects      Project[]
+  subcontractors Subcontractor[]
+  invoices      Invoice[]
+  marketingTemplates MarketingTemplate[]
+  subscriptionTier String @default("basic") // basic, professional, enterprise
+}
+
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String?
+  hashedPassword    String
+  role              String   // admin, manager, user
+  company           Company  @relation(fields: [companyId], references: [id])
+  companyId         String
+  twoFactorEnabled  Boolean  @default(false)
+  twoFactorSecret   String?
+  lastLogin         DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  notifications     Notification[]
+  auditLogs        AuditLog[]
+}
+
+model Subcontractor {
+  id                String   @id @default(cuid())
+  company           Company  @relation(fields: [companyId], references: [id])
+  companyId         String
+  name              String
+  email             String?
+  phone             String?
+  address           String?
+  taxId             String?
+  businessType      String?  // LLC, Corporation, Sole Proprietorship
+  rating            Float?   // 1-5 star rating
+  status           String   @default("active") // active, inactive, suspended
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  docs              ComplianceDocument[]
+  timeEntries       TimeEntry[]
+  invoices          Invoice[]
+  specialties       String // Comma-separated specialization areas
+}
+
+model ComplianceDocument {
+  id               String   @id @default(cuid())
+  subcontractor    Subcontractor @relation(fields: [subcontractorId], references: [id])
+  subcontractorId  String
+  type             String   // license, insurance, certification, etc.
+  fileUrl          String
+  status           String   @default("pending") // pending, verified, rejected
+  expiresAt        DateTime?
+  verificationDate DateTime?
+  verifiedBy       String?  // User ID who verified
+  metadata         String?  // Additional document metadata (JSON string)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  auditLogs        AuditLog[]
+}
+
+model Project {
+  id               String   @id @default(cuid())
+  company          Company  @relation(fields: [companyId], references: [id])
+  companyId        String
+  name             String
+  description      String?
+  status           String   @default("active") // active, completed, on-hold
+  startDate        DateTime?
+  endDate          DateTime?
+  budget           Float?
+  actualCost       Float?
+  location         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  timeEntries      TimeEntry[]
+  invoices         Invoice[]
+}
+
+model TimeEntry {
+  id               String   @id @default(cuid())
+  project          Project  @relation(fields: [projectId], references: [id])
+  projectId        String
+  subcontractor    Subcontractor @relation(fields: [subcontractorId], references: [id])
+  subcontractorId  String
+  start            DateTime
+  end              DateTime
+  hours            Float
+  hourlyRate       Float?
+  description      String?
+  status           String   @default("submitted") // submitted, approved, rejected
+  approvedBy       String?  // User ID who approved
+  approvedAt       DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Invoice {
+  id               String   @id @default(cuid())
+  company          Company  @relation(fields: [companyId], references: [id])
+  companyId        String
+  project          Project  @relation(fields: [projectId], references: [id])
+  projectId        String
+  subcontractor    Subcontractor @relation(fields: [subcontractorId], references: [id])
+  subcontractorId  String
+  number           String   @unique
+  amount           Float
+  status           String   @default("draft") // draft, sent, paid, overdue
+  dueDate          DateTime
+  paidDate         DateTime?
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  payments         Payment[]
+}
+
+model Payment {
+  id               String   @id @default(cuid())
+  invoice          Invoice  @relation(fields: [invoiceId], references: [id])
+  invoiceId        String
+  amount           Float
+  method           String   // credit_card, ach, wire, check
+  status           String   @default("pending") // pending, completed, failed
+  transactionId    String?
+  processorFee     Float?
+  metadata         String?  // Payment processor metadata (JSON string)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Notification {
+  id               String   @id @default(cuid())
+  user             User     @relation(fields: [userId], references: [id])
+  userId           String
+  type             String   // email, sms, in_app
+  title            String
+  message          String
+  status           String   @default("unread") // unread, read
+  createdAt        DateTime @default(now())
+  readAt           DateTime?
+}
+
+model MarketingTemplate {
+  id               String   @id @default(cuid())
+  company          Company  @relation(fields: [companyId], references: [id])
+  companyId        String
+  name             String
+  type             String   // email, sms
+  subject          String?
+  content          String
+  variables        String // Comma-separated variable names used in template
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model AuditLog {
+  id               String   @id @default(cuid())
+  user             User     @relation(fields: [userId], references: [id])
+  userId           String
+  action           String
+  entityType       String   // user, project, document, etc.
+  entityId         String
+  metadata         String?  // Audit metadata (JSON string)
+  createdAt        DateTime @default(now())
+  document         ComplianceDocument? @relation(fields: [documentId], references: [id])
+  documentId       String?
+}

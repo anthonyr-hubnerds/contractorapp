@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  users     User[]
+  projects  Project[]
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  name       String?
+  role       String
+  company    Company  @relation(fields: [companyId], references: [id])
+  companyId  String
+  createdAt  DateTime @default(now())
+}
+
+model Subcontractor {
+  id        String   @id @default(cuid())
+  company   Company  @relation(fields: [companyId], references: [id])
+  companyId String
+  name      String
+  createdAt DateTime @default(now())
+  docs      ComplianceDocument[]
+}
+
+model ComplianceDocument {
+  id               String   @id @default(cuid())
+  subcontractor    Subcontractor @relation(fields: [subcontractorId], references: [id])
+  subcontractorId  String
+  type             String
+  fileUrl          String
+  status           String   @default("pending")
+  expiresAt        DateTime?
+  createdAt        DateTime @default(now())
+}
+
+model Project {
+  id         String   @id @default(cuid())
+  company    Company  @relation(fields: [companyId], references: [id])
+  companyId  String
+  name       String
+  budget     Float?
+  createdAt  DateTime @default(now())
+  timeEntries TimeEntry[]
+}
+
+model TimeEntry {
+  id           String   @id @default(cuid())
+  project      Project  @relation(fields: [projectId], references: [id])
+  projectId    String
+  subcontractor Subcontractor @relation(fields: [subcontractorId], references: [id])
+  subcontractorId String
+  start        DateTime
+  end          DateTime
+  hours        Float
+  status       String   @default("submitted")
+  createdAt    DateTime @default(now())
+}
