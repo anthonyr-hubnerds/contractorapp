@@ -12,6 +12,12 @@ jobs:
     defaults:
       run:
         working-directory: apps/api
+    env:
+      DATABASE_URL: "file:./test.db"
+      AWS_REGION: "us-east-1"
+      AWS_ACCESS_KEY_ID: "test"
+      AWS_SECRET_ACCESS_KEY: "test"
+      AWS_S3_BUCKET: "test-bucket"
 
     steps:
     - uses: actions/checkout@v4
