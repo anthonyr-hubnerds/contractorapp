@@ -1,7 +1,8 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './db';
+import { prisma } from './db';
 import documentsRouter from './routes/documents';
 import { logger } from './utils/logger';
 
@@ -15,7 +16,7 @@ process.on('unhandledRejection', (reason) => {
   console.error('UNHANDLED REJECTION:', reason);
 });
 
-const prisma = new PrismaClient();
+
 
 const app = express();
 app.use(
@@ -29,6 +30,20 @@ app.use(express.json());
 
 // Mount documents router which handles S3 uploads for subcontractors
 app.use('/api/subcontractors', documentsRouter);
+
+app.get('/api/subcontractors', async (_req: Request, res: Response) => {
+  try {
+    const subcontractors = await prisma.subcontractor.findMany({
+      include: {
+        docs: true
+      }
+    });
+    res.json(subcontractors);
+  } catch (error) {
+    logger.error('Failed to fetch subcontractors', error);
+    res.status(500).json({ error: 'Failed to fetch subcontractors' });
+  }
+});
 
 app.get('/health', (_req: Request, res: Response) => res.json({ status: 'ok' }));
 

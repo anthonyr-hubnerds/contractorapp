@@ -185,9 +185,10 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
             Specialties
           </Typography>
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            {sub.specialties.map((specialty, index) => (
-              <Chip key={index} label={specialty} size="small" sx={{ m: 0.5 }} />
-            ))}
+            {Array.isArray(sub.specialties) &&
+              sub.specialties.map((specialty, index) => (
+                <Chip key={index} label={specialty} size="small" sx={{ m: 0.5 }} />
+              ))}
           </Stack>
         </Box>
 

@@ -1,8 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db';
 import { sendEmail } from './email';
 import { formatDistanceToNow } from 'date-fns';
 
-const prisma = new PrismaClient();
+
 
 interface DocumentNotification {
   id: string;
