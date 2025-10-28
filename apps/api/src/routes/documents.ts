@@ -1,5 +1,5 @@
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import multer from 'multer';
+import multer, { FileFilterCallback } from 'multer';
 import multerS3 from 'multer-s3';
 import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
@@ -18,16 +18,38 @@ const s3 = new S3Client({
 });
 
 const isTestEnv = process.env.NODE_ENV === 'test';
+type UploadedFile = Express.Multer.File & {
+  location?: string;
+  key?: string;
+  bucket?: string;
+};
+
+function parseMetadata(meta: unknown): Record<string, unknown> {
+  if (!meta) return {};
+  if (typeof meta === 'string') {
+    try {
+      return JSON.parse(meta) as Record<string, unknown>;
+    } catch {
+      return {};
+    }
+  }
+  if (typeof meta === 'object') return meta as Record<string, unknown>;
+  return {};
+}
 let upload: multer.Multer;
 if (isTestEnv) {
   upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 10 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
+    fileFilter: (
+      req: Request & { fileValidationError?: string },
+      file: Express.Multer.File,
+      cb: FileFilterCallback
+    ) => {
       const allowedMimes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
       if (allowedMimes.includes(file.mimetype)) return cb(null, true);
       // Don't throw — mark the request so we can respond gracefully in the route handler
-      (req as any).fileValidationError =
+      req.fileValidationError =
         'Invalid file type. Only PDF, JPEG, PNG, and GIF files are allowed.';
       return cb(null, false);
     }
@@ -41,10 +63,14 @@ if (isTestEnv) {
       key: (_req, file, cb) => cb(null, `documents/${Date.now()}-${file.originalname}`)
     }),
     limits: { fileSize: 10 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
+    fileFilter: (
+      req: Request & { fileValidationError?: string },
+      file: Express.Multer.File,
+      cb: FileFilterCallback
+    ) => {
       const allowedMimes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
       if (allowedMimes.includes(file.mimetype)) return cb(null, true);
-      (req as any).fileValidationError =
+      req.fileValidationError =
         'Invalid file type. Only PDF, JPEG, PNG, and GIF files are allowed.';
       return cb(null, false);
     }
@@ -58,13 +84,13 @@ router.post('/:subcontractorId/documents', async (req: Request, res: Response) =
     logger.info('[test] POST /:subcontractorId/documents start', { subcontractorId });
 
   await new Promise<void>((resolve) => {
-    upload.single('file')(req, res, async (err: any) => {
+    upload.single('file')(req, res, async (err?: unknown) => {
       if (process.env.NODE_ENV === 'test')
-        logger.info('[test] multer callback invoked, err=', err && err.message);
+        logger.info('[test] multer callback invoked, err=', err && (err as Error).message);
       if (err) {
         if (process.env.NODE_ENV === 'test')
-          logger.info('[test] multer error -> responding 400', err.message);
-        res.status(400).json({ error: err.message });
+          logger.info('[test] multer error -> responding 400', (err as Error).message);
+        res.status(400).json({ error: (err as Error).message });
         return resolve();
       }
 
@@ -83,10 +109,10 @@ router.post('/:subcontractorId/documents', async (req: Request, res: Response) =
         }
       }
 
-      const file = req.file as Express.MulterS3.File;
+      const file = req.file as UploadedFile | undefined;
       if (!file) {
         // If fileFilter rejected the file, surface that error message to the client
-        const fv = (req as any).fileValidationError;
+        const fv = (req as Request & { fileValidationError?: string }).fileValidationError;
         if (fv) {
           res.status(400).json({ error: fv });
           return resolve();
@@ -97,14 +123,14 @@ router.post('/:subcontractorId/documents', async (req: Request, res: Response) =
       }
 
       try {
-        const fileUrl = (file as any).location || `memory://${file.originalname}-${Date.now()}`;
-        const metaObj: any = {
+        const fileUrl = file.location || `memory://${file.originalname}-${Date.now()}`;
+        const metaObj: Record<string, unknown> = {
           originalName: file.originalname,
           size: file.size,
           mimeType: file.mimetype
         };
-        if ((file as any).key) metaObj.key = (file as any).key;
-        if ((file as any).bucket) metaObj.bucket = (file as any).bucket;
+        if (file.key) (metaObj as Record<string, unknown>)['key'] = file.key;
+        if (file.bucket) (metaObj as Record<string, unknown>)['bucket'] = file.bucket;
 
         const document = await prisma.complianceDocument.create({
           data: {
@@ -122,8 +148,9 @@ router.post('/:subcontractorId/documents', async (req: Request, res: Response) =
       } catch (dbErr) {
         // attempt to cleanup S3 object if present
         try {
-          const key = (req.file as any)?.key;
-          const bucket = (req.file as any)?.bucket || process.env.AWS_S3_BUCKET;
+          const key = (req.file as UploadedFile | undefined)?.key;
+          const bucket =
+            (req.file as UploadedFile | undefined)?.bucket || process.env.AWS_S3_BUCKET;
           if (key && bucket) {
             await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
           }
@@ -150,8 +177,8 @@ router.delete('/:subcontractorId/documents/:documentId', async (req: Request, re
     });
     if (!document) return res.status(404).json({ error: 'Document not found' });
 
-    const existingMeta = (document.metadata as any) || {};
-    const s3Key = existingMeta.key;
+    const existingMeta = parseMetadata(document.metadata);
+    const s3Key = existingMeta.key as string | undefined;
     if (s3Key) {
       try {
         await s3.send(
@@ -192,27 +219,33 @@ router.put(
       if (existingDocument.expiresAt && existingDocument.expiresAt < new Date())
         return res.status(400).json({ error: 'Cannot verify expired document' });
 
-      const existingMeta = (existingDocument.metadata as any) || {};
+      const existingMeta = parseMetadata(existingDocument.metadata);
       const newVerificationEntry = {
         status,
         verifiedBy,
         date: new Date().toISOString(),
         notes: verificationNotes || null
       };
+      const prevHistory = Array.isArray(
+        (existingMeta as { verificationHistory?: unknown }).verificationHistory
+      )
+        ? ((existingMeta as { verificationHistory?: unknown }).verificationHistory as unknown[])
+        : [];
+
       const updatedMeta = {
         ...existingMeta,
         lastVerifiedAt: new Date().toISOString(),
-        verificationHistory: [
-          ...(Array.isArray(existingMeta.verificationHistory)
-            ? existingMeta.verificationHistory
-            : []),
-          newVerificationEntry
-        ]
+        verificationHistory: [...prevHistory, newVerificationEntry]
       };
 
       const document = await prisma.complianceDocument.update({
         where: { id: documentId },
-        data: { status, verificationDate: new Date(), verifiedBy, metadata: updatedMeta as any }
+        data: {
+          status,
+          verificationDate: new Date(),
+          verifiedBy,
+          metadata: JSON.stringify(updatedMeta)
+        }
       });
       return res.json({ message: 'Document verified successfully', document });
     } catch (err) {
