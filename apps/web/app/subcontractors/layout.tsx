@@ -1,11 +1,7 @@
 import { Container, Box } from '@mui/material';
 import Navigation from '../components/Navigation';
 
-export default function SubcontractorsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function SubcontractorsLayout({ children }: { children: React.ReactNode }) {
   return (
     <Box>
       <Navigation />

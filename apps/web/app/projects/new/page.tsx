@@ -39,7 +39,7 @@ export default function NewProjectPage() {
       const res = await fetch('http://localhost:4000/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, budget: budget === '' ? null : Number(budget), companyId }),
+        body: JSON.stringify({ name, budget: budget === '' ? null : Number(budget), companyId })
       });
       if (!res.ok) throw new Error('Failed to create project');
       router.push('/projects');
@@ -54,19 +54,46 @@ export default function NewProjectPage() {
     <Box>
       <Navigation />
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Typography variant="h5" gutterBottom>Create Project</Typography>
+        <Typography variant="h5" gutterBottom>
+          Create Project
+        </Typography>
         <Paper sx={{ p: 2 }}>
           <form onSubmit={handleSubmit}>
-            <TextField fullWidth label="Name" value={name} onChange={e => setName(e.target.value)} sx={{ mb: 2 }} required />
-            <TextField fullWidth label="Budget" type="number" value={budget} onChange={e => setBudget(e.target.value === '' ? '' : Number(e.target.value))} sx={{ mb: 2 }} />
-            <TextField select fullWidth label="Company" value={companyId} onChange={e => setCompanyId(e.target.value)} sx={{ mb: 2 }}>
-              {companies.map(c => (
-                <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+            <TextField
+              fullWidth
+              label="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              sx={{ mb: 2 }}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Budget"
+              type="number"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value === '' ? '' : Number(e.target.value))}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              select
+              fullWidth
+              label="Company"
+              value={companyId}
+              onChange={(e) => setCompanyId(e.target.value)}
+              sx={{ mb: 2 }}
+            >
+              {companies.map((c) => (
+                <MenuItem key={c.id} value={c.id}>
+                  {c.name}
+                </MenuItem>
               ))}
             </TextField>
             {error && <Typography color="error">{error}</Typography>}
             <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
-              <Button variant="contained" type="submit" disabled={loading}>Create</Button>
+              <Button variant="contained" type="submit" disabled={loading}>
+                Create
+              </Button>
               <Link href="/projects" style={{ textDecoration: 'none' }}>
                 <Button variant="outlined">Cancel</Button>
               </Link>

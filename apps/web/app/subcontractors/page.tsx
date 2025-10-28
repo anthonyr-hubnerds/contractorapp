@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  Box,
-  Container,
-  Typography,
-  Button,
-  Alert,
-  CircularProgress,
-} from '@mui/material';
+import { Box, Typography, Button, Alert, CircularProgress } from '@mui/material';
 import Link from 'next/link';
 import BusinessIcon from '@mui/icons-material/Business';
 import SubcontractorCard from '../components/SubcontractorCard';
@@ -18,7 +11,9 @@ export default function SubcontractorsPage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}
+      >
         <CircularProgress />
       </Box>
     );

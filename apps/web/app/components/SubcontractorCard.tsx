@@ -23,7 +23,7 @@ import {
   FormControl,
   FormControlLabel,
   Checkbox,
-  Button,
+  Button
 } from '@mui/material';
 import {
   Timeline,
@@ -31,7 +31,7 @@ import {
   TimelineSeparator,
   TimelineContent,
   TimelineDot,
-  TimelineConnector,
+  TimelineConnector
 } from '@mui/lab';
 import { useState } from 'react';
 import { useSWRConfig } from 'swr';
@@ -64,7 +64,10 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function SubcontractorCard({ subcontractor: sub }: SubcontractorCardProps) {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<ComplianceDocument | null>(null);
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -73,15 +76,20 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
   const { mutate } = useSWRConfig();
   const getStatusColor = (status: string): 'success' | 'default' | 'error' => {
     switch (status.toLowerCase()) {
-      case 'active': return 'success';
-      case 'inactive': return 'default';
-      case 'suspended': return 'error';
-      default: return 'default';
+      case 'active':
+        return 'success';
+      case 'inactive':
+        return 'default';
+      case 'suspended':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
   const getDocumentStatusIcon = (doc: ComplianceDocument) => {
-    const isExpiringSoon = doc.expiresAt && 
+    const isExpiringSoon =
+      doc.expiresAt &&
       new Date(doc.expiresAt).getTime() - new Date().getTime() < 30 * 24 * 60 * 60 * 1000; // 30 days
 
     if (isExpiringSoon) {
@@ -111,7 +119,7 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
   };
 
   return (
-    <Card 
+    <Card
       elevation={3}
       sx={{
         height: '100%',
@@ -124,15 +132,13 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
       }}
     >
       <CardContent>
-        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <Box
+          sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
+        >
           <Typography variant="h6" component="h2">
             {sub.name}
           </Typography>
-          <Chip
-            label={sub.status}
-            color={getStatusColor(sub.status)}
-            size="small"
-          />
+          <Chip label={sub.status} color={getStatusColor(sub.status)} size="small" />
         </Box>
 
         <Stack spacing={1} sx={{ mb: 2 }}>
@@ -144,7 +150,7 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
               </Typography>
             </Box>
           )}
-          
+
           {sub.businessType && (
             <Typography variant="body2" color="text.secondary">
               <BusinessIcon fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />
@@ -180,35 +186,24 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
           </Typography>
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
             {sub.specialties.map((specialty, index) => (
-              <Chip
-                key={index}
-                label={specialty}
-                size="small"
-                sx={{ m: 0.5 }}
-              />
+              <Chip key={index} label={specialty} size="small" sx={{ m: 0.5 }} />
             ))}
           </Stack>
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="subtitle2">
-            Compliance Documents
-          </Typography>
+          <Typography variant="subtitle2">Compliance Documents</Typography>
           <Tooltip title="Upload Document">
-            <IconButton 
-              size="small" 
-              color="primary"
-              onClick={() => setUploadDialogOpen(true)}
-            >
+            <IconButton size="small" color="primary" onClick={() => setUploadDialogOpen(true)}>
               <UploadIcon />
             </IconButton>
           </Tooltip>
         </Box>
         {sub.docs.length === 0 ? (
-          <Box 
-            sx={{ 
-              p: 2, 
-              textAlign: 'center', 
+          <Box
+            sx={{
+              p: 2,
+              textAlign: 'center',
               backgroundColor: 'background.paper',
               borderRadius: 1,
               border: '1px dashed',
@@ -252,21 +247,23 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
                 </Box>
                 <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
                   {getDocumentStatusIcon(doc)}
-                  <Box sx={{ 
-                    display: 'flex', 
-                    gap: 0.5,
-                    opacity: 0,
-                    transition: 'opacity 0.2s',
-                    '.MuiBox-root:hover > &': { opacity: 1 }
-                  }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 0.5,
+                      opacity: 0,
+                      transition: 'opacity 0.2s',
+                      '.MuiBox-root:hover > &': { opacity: 1 }
+                    }}
+                  >
                     <Tooltip title="View Document">
                       <IconButton size="small" href={doc.fileUrl} target="_blank">
                         <DescriptionIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Verify Document">
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         onClick={() => {
                           setSelectedDoc(doc);
                           setVerifyDialogOpen(true);
@@ -277,7 +274,7 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Share Document">
-                      <IconButton 
+                      <IconButton
                         size="small"
                         onClick={() => {
                           setSelectedDoc(doc);
@@ -288,7 +285,7 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="View History">
-                      <IconButton 
+                      <IconButton
                         size="small"
                         onClick={() => {
                           setSelectedDoc(doc);
@@ -299,7 +296,7 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Delete Document">
-                      <IconButton 
+                      <IconButton
                         size="small"
                         color="error"
                         onClick={() => {
@@ -319,10 +316,10 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
       </CardContent>
       <CardActions sx={{ mt: 'auto', justifyContent: 'flex-end', gap: 1 }}>
         <Link href={`/subcontractors/${sub.id}/edit`} style={{ textDecoration: 'none' }}>
-          <IconButton 
-            size="small" 
+          <IconButton
+            size="small"
             color="primary"
-            sx={{ 
+            sx={{
               border: '1px solid',
               borderColor: 'divider',
               '&:hover': { backgroundColor: 'primary.main', color: 'white' }
@@ -332,9 +329,9 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
           </IconButton>
         </Link>
       </CardActions>
-      
-      <DocumentUpload 
-        open={uploadDialogOpen} 
+
+      <DocumentUpload
+        open={uploadDialogOpen}
         onClose={() => setUploadDialogOpen(false)}
         onUpload={async (document, setProgress) => {
           try {
@@ -344,9 +341,9 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
             if (document.expiresAt) {
               formData.append('expiresAt', document.expiresAt.toISOString());
             }
-            
+
             const xhr = new XMLHttpRequest();
-            
+
             await new Promise<void>((resolve, reject) => {
               xhr.upload.onprogress = (event) => {
                 if (event.lengthComputable) {
@@ -354,7 +351,7 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
                   setProgress(progress);
                 }
               };
-              
+
               xhr.onload = () => {
                 if (xhr.status === 200) {
                   resolve();
@@ -362,38 +359,38 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
                   reject(new Error('Upload failed'));
                 }
               };
-              
+
               xhr.onerror = () => reject(new Error('Upload failed'));
-              
+
               xhr.open('POST', `${API_BASE}/api/subcontractors/${sub.id}/documents`);
               xhr.send(formData);
             });
-            
+
             // Refresh the subcontractor data
             await mutate('/api/subcontractors');
             setUploadDialogOpen(false);
-            setNotification({ 
-              type: 'success', 
-              message: 'Document uploaded successfully' 
+            setNotification({
+              type: 'success',
+              message: 'Document uploaded successfully'
             });
           } catch (err) {
             console.error('Error uploading document:', err);
-            setNotification({ 
-              type: 'error', 
-              message: 'Failed to upload document. Please try again.' 
+            setNotification({
+              type: 'error',
+              message: 'Failed to upload document. Please try again.'
             });
             throw new Error('Failed to upload document');
           }
         }}
       />
-      
+
       <Snackbar
         open={!!notification}
         autoHideDuration={6000}
         onClose={() => setNotification(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
+        <Alert
           onClose={() => setNotification(null)}
           severity={notification?.type || 'info'}
           variant="filled"
@@ -405,43 +402,49 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
       </Snackbar>
 
       {/* Verification Dialog */}
-      <Dialog 
-        open={verifyDialogOpen} 
+      <Dialog
+        open={verifyDialogOpen}
         onClose={() => setVerifyDialogOpen(false)}
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>
-          Verify Document
-        </DialogTitle>
+        <DialogTitle>Verify Document</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 2 }}>
             <Typography variant="subtitle2" color="text.secondary">
               Document Details
             </Typography>
-            <Box sx={{ 
-              p: 2, 
-              bgcolor: 'background.default',
-              borderRadius: 1,
-              border: '1px solid',
-              borderColor: 'divider'
-            }}>
+            <Box
+              sx={{
+                p: 2,
+                bgcolor: 'background.default',
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'divider'
+              }}
+            >
               <Stack spacing={1}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Type</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Type
+                  </Typography>
                   <Typography variant="body2">{selectedDoc?.type}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Expiration</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Expiration
+                  </Typography>
                   <Typography variant="body2">
-                    {selectedDoc?.expiresAt 
+                    {selectedDoc?.expiresAt
                       ? new Date(selectedDoc.expiresAt).toLocaleDateString()
                       : 'No expiration'}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Status</Typography>
-                  <Chip 
+                  <Typography variant="body2" color="text.secondary">
+                    Status
+                  </Typography>
+                  <Chip
                     size="small"
                     label={selectedDoc?.status}
                     color={selectedDoc?.status === 'verified' ? 'success' : 'default'}
@@ -461,10 +464,7 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2, gap: 1 }}>
-          <Button 
-            onClick={() => setVerifyDialogOpen(false)}
-            startIcon={<CancelIcon />}
-          >
+          <Button onClick={() => setVerifyDialogOpen(false)} startIcon={<CancelIcon />}>
             Cancel
           </Button>
           <Button
@@ -473,10 +473,10 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
             onClick={async () => {
               try {
                 const res = await fetch(`${API_BASE}/api/documents/${selectedDoc?.id}/verify`, {
-                  method: 'POST',
+                  method: 'POST'
                 });
                 if (!res.ok) throw new Error('Failed to verify document');
-                
+
                 await mutate('/api/subcontractors');
                 setVerifyDialogOpen(false);
                 setNotification({
@@ -523,19 +523,17 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setDeleteDialogOpen(false)}>
-            Cancel
-          </Button>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
           <Button
             variant="contained"
             color="error"
             onClick={async () => {
               try {
                 const res = await fetch(`${API_BASE}/api/documents/${selectedDoc?.id}`, {
-                  method: 'DELETE',
+                  method: 'DELETE'
                 });
                 if (!res.ok) throw new Error('Failed to delete document');
-                
+
                 await mutate('/api/subcontractors');
                 setDeleteDialogOpen(false);
                 setNotification({
@@ -589,9 +587,7 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setShareDialogOpen(false)}>
-            Cancel
-          </Button>
+          <Button onClick={() => setShareDialogOpen(false)}>Cancel</Button>
           <Button
             variant="contained"
             onClick={() => {
@@ -660,12 +656,9 @@ export default function SubcontractorCard({ subcontractor: sub }: SubcontractorC
           </Timeline>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setHistoryDialogOpen(false)}>
-            Close
-          </Button>
+          <Button onClick={() => setHistoryDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
-      
     </Card>
   );
 }

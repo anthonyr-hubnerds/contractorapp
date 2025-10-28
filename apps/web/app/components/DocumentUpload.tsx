@@ -9,7 +9,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   FormControl,
   InputLabel,
   Select,
@@ -17,7 +16,7 @@ import {
   Stack,
   Alert,
   LinearProgress,
-  CircularProgress,
+  CircularProgress
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -27,11 +26,14 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 interface DocumentUploadProps {
   open: boolean;
   onClose: () => void;
-  onUpload: (document: {
-    type: string;
-    expiresAt: Date | null;
-    file: File;
-  }, setProgress: (progress: number) => void) => Promise<void>;
+  onUpload: (
+    document: {
+      type: string;
+      expiresAt: Date | null;
+      file: File;
+    },
+    setProgress: (progress: number) => void
+  ) => Promise<void>;
 }
 
 const documentTypes = [
@@ -42,7 +44,7 @@ const documentTypes = [
   'Professional License',
   'Bonding Certificate',
   'Tax Certificate',
-  'Other',
+  'Other'
 ];
 
 export default function DocumentUpload({ open, onClose, onUpload }: DocumentUploadProps) {
@@ -118,11 +120,14 @@ export default function DocumentUpload({ open, onClose, onUpload }: DocumentUplo
         return;
       }
 
-      await onUpload({
-        type,
-        expiresAt,
-        file,
-      }, setUploadProgress);
+      await onUpload(
+        {
+          type,
+          expiresAt,
+          file
+        },
+        setUploadProgress
+      );
 
       // Reset form
       setType('');
@@ -167,8 +172,8 @@ export default function DocumentUpload({ open, onClose, onUpload }: DocumentUplo
               slotProps={{
                 textField: {
                   fullWidth: true,
-                  helperText: 'Leave blank if document does not expire',
-                },
+                  helperText: 'Leave blank if document does not expire'
+                }
               }}
             />
 
@@ -192,11 +197,14 @@ export default function DocumentUpload({ open, onClose, onUpload }: DocumentUplo
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     borderColor: 'primary.main',
-                    backgroundColor: 'action.hover',
-                  },
+                    backgroundColor: 'action.hover'
+                  }
                 }}
               >
-                <label htmlFor="document-file" style={{ cursor: loading ? 'not-allowed' : 'pointer' }}>
+                <label
+                  htmlFor="document-file"
+                  style={{ cursor: loading ? 'not-allowed' : 'pointer' }}
+                >
                   {preview ? (
                     <Box sx={{ mb: 2 }}>
                       <img
@@ -206,7 +214,7 @@ export default function DocumentUpload({ open, onClose, onUpload }: DocumentUplo
                           maxWidth: '100%',
                           maxHeight: 200,
                           objectFit: 'contain',
-                          borderRadius: 8,
+                          borderRadius: 8
                         }}
                       />
                     </Box>
@@ -215,11 +223,15 @@ export default function DocumentUpload({ open, onClose, onUpload }: DocumentUplo
                       sx={{
                         fontSize: 48,
                         color: loading ? 'action.disabled' : 'text.secondary',
-                        mb: 2,
+                        mb: 2
                       }}
                     />
                   )}
-                  <Typography variant="subtitle1" gutterBottom color={loading ? 'text.disabled' : 'text.primary'}>
+                  <Typography
+                    variant="subtitle1"
+                    gutterBottom
+                    color={loading ? 'text.disabled' : 'text.primary'}
+                  >
                     {file ? file.name : 'Drag and drop your file here or click to select'}
                   </Typography>
                   <Typography variant="body2" color={loading ? 'text.disabled' : 'text.secondary'}>
@@ -227,7 +239,7 @@ export default function DocumentUpload({ open, onClose, onUpload }: DocumentUplo
                   </Typography>
                 </label>
               </Box>
-              
+
               {uploadProgress > 0 && uploadProgress < 100 && (
                 <Box sx={{ mt: 2 }}>
                   <LinearProgress
@@ -238,11 +250,15 @@ export default function DocumentUpload({ open, onClose, onUpload }: DocumentUplo
                       borderRadius: 4,
                       backgroundColor: 'action.hover',
                       '& .MuiLinearProgress-bar': {
-                        borderRadius: 4,
-                      },
+                        borderRadius: 4
+                      }
                     }}
                   />
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 1, display: 'block' }}
+                  >
                     Uploading... {uploadProgress}%
                   </Typography>
                 </Box>

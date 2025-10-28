@@ -19,7 +19,7 @@ import {
   Alert,
   Divider,
   IconButton,
-  InputAdornment,
+  InputAdornment
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -39,7 +39,7 @@ const validationSchema = Yup.object({
   rating: Yup.number().min(0).max(5),
   status: Yup.string().oneOf(statuses, 'Invalid status').required('Status is required'),
   specialties: Yup.array().of(Yup.string()).min(1, 'At least one specialty is required'),
-  companyId: Yup.string().required('Company is required'),
+  companyId: Yup.string().required('Company is required')
 });
 
 export default function NewSubcontractorPage() {
@@ -89,7 +89,7 @@ export default function NewSubcontractorPage() {
       rating: 0,
       status: 'active',
       specialties: [],
-      companyId: '',
+      companyId: ''
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -99,7 +99,7 @@ export default function NewSubcontractorPage() {
         const res = await fetch('http://localhost:4000/api/subcontractors', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(values),
+          body: JSON.stringify(values)
         });
         if (!res.ok) throw new Error('Failed to create subcontractor');
         router.push('/subcontractors');
@@ -108,7 +108,7 @@ export default function NewSubcontractorPage() {
       } finally {
         setLoading(false);
       }
-    },
+    }
   });
 
   const handleAddSpecialty = () => {
@@ -128,7 +128,9 @@ export default function NewSubcontractorPage() {
   return (
     <Box>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom>Create Subcontractor</Typography>
+        <Typography variant="h4" gutterBottom>
+          Create Subcontractor
+        </Typography>
         <Typography variant="body2" color="text.secondary">
           Add a new subcontractor with their business details and specialties
         </Typography>
@@ -138,7 +140,7 @@ export default function NewSubcontractorPage() {
         <form onSubmit={formik.handleSubmit}>
           <Stack spacing={3}>
             {error && <Alert severity="error">{error}</Alert>}
-            
+
             <Typography variant="h6">Basic Information</Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField
@@ -163,8 +165,10 @@ export default function NewSubcontractorPage() {
                   label="Company"
                   required
                 >
-                  {companies.map(c => (
-                    <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                  {companies.map((c) => (
+                    <MenuItem key={c.id} value={c.id}>
+                      {c.name}
+                    </MenuItem>
                   ))}
                 </Select>
                 {formik.touched.companyId && formik.errors.companyId && (
@@ -233,8 +237,10 @@ export default function NewSubcontractorPage() {
                   error={formik.touched.businessType && Boolean(formik.errors.businessType)}
                   label="Business Type"
                 >
-                  {businessTypes.map(type => (
-                    <MenuItem key={type} value={type}>{type}</MenuItem>
+                  {businessTypes.map((type) => (
+                    <MenuItem key={type} value={type}>
+                      {type}
+                    </MenuItem>
                   ))}
                 </Select>
                 {formik.touched.businessType && formik.errors.businessType && (
@@ -255,8 +261,10 @@ export default function NewSubcontractorPage() {
                   label="Status"
                   required
                 >
-                  {statuses.map(status => (
-                    <MenuItem key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</MenuItem>
+                  {statuses.map((status) => (
+                    <MenuItem key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </MenuItem>
                   ))}
                 </Select>
                 {formik.touched.status && formik.errors.status && (
@@ -297,7 +305,7 @@ export default function NewSubcontractorPage() {
                         <AddIcon />
                       </IconButton>
                     </InputAdornment>
-                  ),
+                  )
                 }}
               />
               {formik.touched.specialties && formik.errors.specialties && (
@@ -321,11 +329,7 @@ export default function NewSubcontractorPage() {
                   Cancel
                 </Button>
               </Link>
-              <Button
-                variant="contained"
-                type="submit"
-                disabled={loading || !formik.isValid}
-              >
+              <Button variant="contained" type="submit" disabled={loading || !formik.isValid}>
                 Create Subcontractor
               </Button>
             </Box>

@@ -48,8 +48,8 @@ export default function Home() {
         const response = await fetch('http://localhost:4000/api/companies', {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
-          },
+            'Content-Type': 'application/json'
+          }
         });
         if (!response.ok) {
           throw new Error('Failed to fetch company data');
@@ -81,26 +81,26 @@ export default function Home() {
         <Typography variant="h4" gutterBottom>
           {company.name} Dashboard
         </Typography>
-        
+
         <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr' }, gap: 3 }}>
           {/* Projects Summary */}
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
               Active Projects ({company.projects.length})
             </Typography>
-              {company.projects.map((project) => (
-                <Box key={project.id} sx={{ mb: 2 }}>
-                  <Typography variant="subtitle1">{project.name}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Budget: ${project.budget.toLocaleString()}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Time Entries: {project.timeEntries.length}
-                  </Typography>
-                </Box>
-              ))}
-            </Paper>
-          
+            {company.projects.map((project) => (
+              <Box key={project.id} sx={{ mb: 2 }}>
+                <Typography variant="subtitle1">{project.name}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Budget: ${project.budget.toLocaleString()}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Time Entries: {project.timeEntries.length}
+                </Typography>
+              </Box>
+            ))}
+          </Paper>
+
           {/* Subcontractors Summary */}
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
@@ -113,11 +113,8 @@ export default function Home() {
                   Documents: {sub.docs.length}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Compliance Status: {
-                    sub.docs.some(doc => doc.status === 'approved') 
-                      ? '✅ Approved' 
-                      : '⚠️ Pending'
-                  }
+                  Compliance Status:{' '}
+                  {sub.docs.some((doc) => doc.status === 'approved') ? '✅ Approved' : '⚠️ Pending'}
                 </Typography>
               </Box>
             ))}

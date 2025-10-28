@@ -1,6 +1,15 @@
 'use client';
 
-import { Box, Container, Paper, Typography, List, ListItem, ListItemText, Button } from '@mui/material';
+import {
+  Box,
+  Container,
+  Paper,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Button
+} from '@mui/material';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import Navigation from '../components/Navigation';
@@ -40,8 +49,13 @@ export default function ProjectsPage() {
   return (
     <Box>
       <Navigation />
-      <Container maxWidth="lg" sx={{ mt: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h4" gutterBottom>Projects</Typography>
+      <Container
+        maxWidth="lg"
+        sx={{ mt: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+      >
+        <Typography variant="h4" gutterBottom>
+          Projects
+        </Typography>
         <Box>
           <Link href="/projects/new" style={{ textDecoration: 'none' }}>
             <Button variant="contained">Create Project</Button>
@@ -51,7 +65,10 @@ export default function ProjectsPage() {
           <List>
             {projects.map((p) => (
               <ListItem key={p.id} divider>
-                <ListItemText primary={p.name} secondary={`Budget: $${p.budget ?? 0} — Time Entries: ${p.timeEntries?.length ?? 0}`} />
+                <ListItemText
+                  primary={p.name}
+                  secondary={`Budget: $${p.budget ?? 0} — Time Entries: ${p.timeEntries?.length ?? 0}`}
+                />
               </ListItem>
             ))}
           </List>
